@@ -1,239 +1,223 @@
-# ⚠️ Risk Management System
+# Risk Management System
 
-> Professional Python project implementing Risk Management System
+Sistema de gerenciamento de risco para portfolios de trading com calculo de VaR, position sizing e stop-loss.
 
-[![Python](https://img.shields.io/badge/Python-3.12-3776AB.svg)](https://img.shields.io/badge/)
+[![Python](https://img.shields.io/badge/Python-3.9+-3776AB.svg)](https://www.python.org/)
+[![NumPy](https://img.shields.io/badge/NumPy-1.24+-013243.svg)](https://numpy.org/)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-[English](#english) | [Português](#português)
+[Portugues](#portugues) | [English](#english)
+
+---
+
+## Portugues
+
+### Sobre
+
+Sistema de gerenciamento de risco para portfolios de trading implementado em Python. A classe `RiskManager` oferece:
+
+- **Position Sizing**: calcula tamanho otimo de posicao com base em capital disponivel, limite maximo de exposicao por posicao e risco por trade
+- **Value at Risk (VaR)**: calculo historico e parametrico nos niveis de confianca 95% e 99%
+- **Expected Shortfall (CVaR)**: perda media esperada alem do VaR
+- **Max Drawdown**: calcula drawdown maximo a partir da curva de equity
+- **Sharpe Ratio**: ratio de Sharpe anualizado (base 252 dias uteis)
+- **Stop-Loss**: verificacao de stop-loss para posicoes long e short
+- **Curva de Equity**: registra valor total do portfolio a cada atualizacao de preco
+- **Nivel de Risco**: classifica portfolio em LOW, MEDIUM, HIGH ou CRITICAL com base em drawdown e VaR
+
+### Como Usar
+
+```bash
+# Clonar o repositorio
+git clone https://github.com/galafis/risk-management-system.git
+cd risk-management-system
+
+# Criar ambiente virtual
+python -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
+
+# Instalar dependencias
+pip install -r requirements.txt
+
+# Executar exemplo embutido
+python src/risk_manager.py
+
+# Executar demo do portfolio
+python examples/portfolio_risk_demo.py
+
+# Executar testes
+pytest tests/ -v
+```
+
+### Uso Programatico
+
+```python
+from src.risk_manager import RiskManager
+
+rm = RiskManager(
+    initial_capital=100000,
+    max_position_size=0.10,   # 10% max por posicao
+    max_portfolio_risk=0.02,  # 2% risco por trade
+    stop_loss_percent=0.05,   # 5% stop-loss
+)
+
+# Calcular tamanho de posicao
+size = rm.calculate_position_size(price=150.0)
+
+# Adicionar posicoes
+rm.add_position("AAPL", quantity=100, price=150.0)
+
+# Atualizar precos (atualiza curva de equity)
+rm.update_position_price("AAPL", 155.0)
+
+# Calcular metricas de risco
+metrics = rm.calculate_portfolio_metrics()
+print(f"VaR 95%: {metrics.var_95:.2f}")
+print(f"Max Drawdown: {metrics.max_drawdown:.2%}")
+print(f"Risk Level: {metrics.risk_level.value}")
+
+# Fechar posicao
+pnl = rm.close_position("AAPL")
+```
+
+### Estrutura do Projeto
+
+```
+risk-management-system/
+├── src/
+│   ├── __init__.py
+│   └── risk_manager.py          # Classe RiskManager + dataclasses Position, RiskMetrics
+├── examples/
+│   └── portfolio_risk_demo.py   # Demo com 5 acoes e simulacao de precos
+├── tests/
+│   ├── __init__.py
+│   └── test_main.py             # 30 testes funcionais
+├── requirements.txt
+├── LICENSE
+└── README.md
+```
+
+### Tecnologias
+
+- **Python 3.9+** — linguagem principal
+- **NumPy 1.24+** — calculos de VaR, Sharpe, volatilidade
+
+### Limitacoes
+
+- Beta do portfolio e fixo em 1.0 (placeholder, nao implementado)
+- Nao se conecta a corretoras ou feeds de dados reais
+- Nao inclui Dockerfile ou CI/CD
+- VaR parametrico usa z-scores fixos (1.645 e 2.326) sem interpolacao
 
 ---
 
 ## English
 
-### 🎯 Overview
+### About
 
-**Risk Management System** is a production-grade Python application that showcases modern software engineering practices including clean architecture, comprehensive testing, containerized deployment, and CI/CD readiness.
+Risk management system for trading portfolios implemented in Python. The `RiskManager` class provides:
 
-The codebase comprises **506 lines** of source code organized across **2 modules**, following industry best practices for maintainability, scalability, and code quality.
+- **Position Sizing**: calculates optimal position size based on available capital, maximum exposure per position, and risk per trade
+- **Value at Risk (VaR)**: historical and parametric calculation at 95% and 99% confidence levels
+- **Expected Shortfall (CVaR)**: average expected loss beyond VaR
+- **Max Drawdown**: calculates maximum drawdown from the equity curve
+- **Sharpe Ratio**: annualized Sharpe ratio (252 trading days)
+- **Stop-Loss**: stop-loss check for long and short positions
+- **Equity Curve**: records total portfolio value on each price update
+- **Risk Level**: classifies portfolio as LOW, MEDIUM, HIGH, or CRITICAL based on drawdown and VaR
 
-### ✨ Key Features
-
-- **🏗️ Object-Oriented**: 4 core classes with clean architecture
-- **📐 Clean Architecture**: Modular design with clear separation of concerns
-- **🧪 Test Coverage**: Unit and integration tests for reliability
-- **📚 Documentation**: Comprehensive inline documentation and examples
-- **🔧 Configuration**: Environment-based configuration management
-
-### 🏗️ Architecture
-
-```mermaid
-graph TB
-    subgraph Core["🏗️ Core"]
-        A[Main Module]
-        B[Business Logic]
-        C[Data Processing]
-    end
-    
-    subgraph Support["🔧 Support"]
-        D[Configuration]
-        E[Utilities]
-        F[Tests]
-    end
-    
-    A --> B --> C
-    D --> A
-    E --> B
-    F -.-> B
-    
-    style Core fill:#e1f5fe
-    style Support fill:#f3e5f5
-```
-
-```mermaid
-classDiagram
-    class Position
-    class RiskManager
-    class RiskLevel
-    class RiskMetrics
-    RiskManager --> Position : uses
-    RiskManager --> RiskManager : uses
-    RiskManager --> RiskLevel : uses
-```
-
-### 🚀 Quick Start
-
-#### Prerequisites
-
-- Python 3.12+
-- pip (Python package manager)
-
-#### Installation
+### Usage
 
 ```bash
 # Clone the repository
 git clone https://github.com/galafis/risk-management-system.git
 cd risk-management-system
 
-# Create and activate virtual environment
+# Create virtual environment
 python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+source venv/bin/activate  # Windows: venv\Scripts\activate
 
 # Install dependencies
 pip install -r requirements.txt
+
+# Run built-in example
+python src/risk_manager.py
+
+# Run portfolio demo
+python examples/portfolio_risk_demo.py
+
+# Run tests
+pytest tests/ -v
 ```
 
-#### Running
+### Programmatic Usage
 
-```bash
-# Run the application
-python src/main.py
+```python
+from src.risk_manager import RiskManager
+
+rm = RiskManager(
+    initial_capital=100000,
+    max_position_size=0.10,   # 10% max per position
+    max_portfolio_risk=0.02,  # 2% risk per trade
+    stop_loss_percent=0.05,   # 5% stop-loss
+)
+
+# Calculate position size
+size = rm.calculate_position_size(price=150.0)
+
+# Add positions
+rm.add_position("AAPL", quantity=100, price=150.0)
+
+# Update prices (updates equity curve)
+rm.update_position_price("AAPL", 155.0)
+
+# Calculate risk metrics
+metrics = rm.calculate_portfolio_metrics()
+print(f"VaR 95%: {metrics.var_95:.2f}")
+print(f"Max Drawdown: {metrics.max_drawdown:.2%}")
+print(f"Risk Level: {metrics.risk_level.value}")
+
+# Close position
+pnl = rm.close_position("AAPL")
 ```
 
-### 📁 Project Structure
+### Project Structure
 
 ```
 risk-management-system/
-├── examples/
-│   └── portfolio_risk_demo.py
-├── src/          # Source code
-│   └── risk_manager.py
-├── tests/         # Test suite
+├── src/
 │   ├── __init__.py
-│   └── test_main.py
+│   └── risk_manager.py          # RiskManager class + Position, RiskMetrics dataclasses
+├── examples/
+│   └── portfolio_risk_demo.py   # Demo with 5 stocks and price simulation
+├── tests/
+│   ├── __init__.py
+│   └── test_main.py             # 30 functional tests
+├── requirements.txt
 ├── LICENSE
 └── README.md
 ```
 
-### 🛠️ Tech Stack
+### Technologies
 
-| Technology | Description | Role |
-|------------|-------------|------|
-| **Python** | Core Language | Primary |
+- **Python 3.9+** — core language
+- **NumPy 1.24+** — VaR, Sharpe, volatility calculations
 
-### 🤝 Contributing
+### Limitations
 
-Contributions are welcome! Please feel free to submit a Pull Request. For major changes, please open an issue first to discuss what you would like to change.
-
-1. Fork the project
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-### 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-### 👤 Author
-
-**Gabriel Demetrios Lafis**
-- GitHub: [@galafis](https://github.com/galafis)
-- LinkedIn: [Gabriel Demetrios Lafis](https://linkedin.com/in/gabriel-demetrios-lafis)
+- Portfolio beta is fixed at 1.0 (placeholder, not implemented)
+- Does not connect to brokers or real data feeds
+- Does not include Dockerfile or CI/CD
+- Parametric VaR uses fixed z-scores (1.645 and 2.326) without interpolation
 
 ---
 
-## Português
-
-### 🎯 Visão Geral
-
-**Risk Management System** é uma aplicação Python de nível profissional que demonstra práticas modernas de engenharia de software, incluindo arquitetura limpa, testes abrangentes, implantação containerizada e prontidão para CI/CD.
-
-A base de código compreende **506 linhas** de código-fonte organizadas em **2 módulos**, seguindo as melhores práticas do setor para manutenibilidade, escalabilidade e qualidade de código.
-
-### ✨ Funcionalidades Principais
-
-- **🏗️ Object-Oriented**: 4 core classes with clean architecture
-- **📐 Clean Architecture**: Modular design with clear separation of concerns
-- **🧪 Test Coverage**: Unit and integration tests for reliability
-- **📚 Documentation**: Comprehensive inline documentation and examples
-- **🔧 Configuration**: Environment-based configuration management
-
-### 🏗️ Arquitetura
-
-```mermaid
-graph TB
-    subgraph Core["🏗️ Core"]
-        A[Main Module]
-        B[Business Logic]
-        C[Data Processing]
-    end
-    
-    subgraph Support["🔧 Support"]
-        D[Configuration]
-        E[Utilities]
-        F[Tests]
-    end
-    
-    A --> B --> C
-    D --> A
-    E --> B
-    F -.-> B
-    
-    style Core fill:#e1f5fe
-    style Support fill:#f3e5f5
-```
-
-### 🚀 Início Rápido
-
-#### Prerequisites
-
-- Python 3.12+
-- pip (Python package manager)
-
-#### Installation
-
-```bash
-# Clone the repository
-git clone https://github.com/galafis/risk-management-system.git
-cd risk-management-system
-
-# Create and activate virtual environment
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-
-# Install dependencies
-pip install -r requirements.txt
-```
-
-#### Running
-
-```bash
-# Run the application
-python src/main.py
-```
-
-### 📁 Estrutura do Projeto
-
-```
-risk-management-system/
-├── examples/
-│   └── portfolio_risk_demo.py
-├── src/          # Source code
-│   └── risk_manager.py
-├── tests/         # Test suite
-│   ├── __init__.py
-│   └── test_main.py
-├── LICENSE
-└── README.md
-```
-
-### 🛠️ Stack Tecnológica
-
-| Tecnologia | Descrição | Papel |
-|------------|-----------|-------|
-| **Python** | Core Language | Primary |
-
-### 🤝 Contribuindo
-
-Contribuições são bem-vindas! Sinta-se à vontade para enviar um Pull Request.
-
-### 📄 Licença
-
-Este projeto está licenciado sob a Licença MIT - veja o arquivo [LICENSE](LICENSE) para detalhes.
-
-### 👤 Autor
+## Autor / Author
 
 **Gabriel Demetrios Lafis**
 - GitHub: [@galafis](https://github.com/galafis)
 - LinkedIn: [Gabriel Demetrios Lafis](https://linkedin.com/in/gabriel-demetrios-lafis)
+
+## Licenca / License
+
+MIT License - veja [LICENSE](LICENSE) para detalhes / see [LICENSE](LICENSE) for details.
