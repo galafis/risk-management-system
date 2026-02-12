@@ -3,9 +3,8 @@ Automated Risk Management System
 Author: Gabriel Demetrios Lafis
 """
 
-import pandas as pd
 import numpy as np
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
@@ -22,7 +21,7 @@ class Position:
     quantity: float
     entry_price: float
     current_price: float
-    timestamp: datetime
+    timestamp: Optional[datetime] = None
     
     @property
     def market_value(self) -> float:
@@ -87,14 +86,16 @@ class RiskManager:
         
     def calculate_position_size(self, 
                                 price: float, 
-                                volatility: float,
                                 risk_per_trade: Optional[float] = None) -> int:
         """
         Calculate optimal position size based on risk parameters.
         
+        Uses the smaller of:
+        - max_position_size * capital / price
+        - (risk_per_trade * capital) / (stop_loss_percent * price)
+        
         Args:
             price: Current price of asset
-            volatility: Historical volatility
             risk_per_trade: Risk per trade (default: max_portfolio_risk)
             
         Returns:
@@ -156,7 +157,10 @@ class RiskManager:
             Expected Shortfall value
         """
         var = self.calculate_var(returns, confidence_level)
-        return returns[returns <= var].mean()
+        tail = returns[returns <= var]
+        if len(tail) == 0:
+            return var
+        return tail.mean()
     
     def calculate_max_drawdown(self, equity_curve: List[float]) -> float:
         """
@@ -297,9 +301,10 @@ class RiskManager:
         self.current_capital -= quantity * price
     
     def update_position_price(self, symbol: str, new_price: float):
-        """Update position with new market price"""
+        """Update position with new market price and record equity."""
         if symbol in self.positions:
             self.positions[symbol].current_price = new_price
+            self._update_equity_curve()
     
     def close_position(self, symbol: str):
         """Close position and realize P&L"""
@@ -309,8 +314,16 @@ class RiskManager:
             pnl = pos.pnl
             self.returns_history.append(pnl / self.initial_capital)
             del self.positions[symbol]
+            self._update_equity_curve()
             return pnl
         return 0
+    
+    def _update_equity_curve(self):
+        """Record current total portfolio value in equity curve."""
+        total = self.current_capital + sum(
+            p.market_value for p in self.positions.values()
+        )
+        self.equity_curve.append(total)
     
     def get_portfolio_summary(self) -> Dict:
         """Get summary of current portfolio"""
@@ -338,8 +351,7 @@ if __name__ == "__main__":
     
     # Calculate position size
     price = 150.0
-    volatility = 0.25
-    position_size = rm.calculate_position_size(price, volatility)
+    position_size = rm.calculate_position_size(price)
     print(f"Recommended position size for ${price}: {position_size} shares")
     
     # Add positions
