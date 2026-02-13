@@ -80,6 +80,21 @@ print(f"Risk Level: {metrics.risk_level.value}")
 pnl = rm.close_position("AAPL")
 ```
 
+### Arquitetura
+
+```mermaid
+graph TD
+    A["portfolio_risk_demo.py"] -->|cria| B["RiskManager"]
+    B --> C["Position (dataclass)"]
+    B --> D["RiskMetrics (dataclass)"]
+    D --> E["VaR 95%/99%<br/>Expected Shortfall"]
+    D --> F["Max Drawdown<br/>Sharpe Ratio"]
+    D --> G["Nivel de Risco<br/>LOW/MED/HIGH/CRITICAL"]
+    B --> H["Curva de Equity"]
+    B --> I["Verificacao Stop-Loss"]
+    B --> J["Position Sizing"]
+```
+
 ### Estrutura do Projeto
 
 ```
@@ -179,6 +194,21 @@ print(f"Risk Level: {metrics.risk_level.value}")
 
 # Close position
 pnl = rm.close_position("AAPL")
+```
+
+### Architecture
+
+```mermaid
+graph TD
+    A["portfolio_risk_demo.py"] -->|creates| B["RiskManager"]
+    B --> C["Position (dataclass)"]
+    B --> D["RiskMetrics (dataclass)"]
+    D --> E["VaR 95%/99%<br/>Expected Shortfall"]
+    D --> F["Max Drawdown<br/>Sharpe Ratio"]
+    D --> G["Risk Level<br/>LOW/MED/HIGH/CRITICAL"]
+    B --> H["Equity Curve"]
+    B --> I["Stop-Loss Check"]
+    B --> J["Position Sizing"]
 ```
 
 ### Project Structure
